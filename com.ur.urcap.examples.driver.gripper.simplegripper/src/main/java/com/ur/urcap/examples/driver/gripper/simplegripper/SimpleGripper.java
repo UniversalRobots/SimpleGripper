@@ -35,7 +35,7 @@ public class SimpleGripper implements GripperContribution {
 	}
 
 	@Override
-	public void configureInstallation(CustomUserInputConfiguration customUserInputConfiguration, SystemConfiguration systemConfiguration,
+	public void configureInstallation(CustomUserInputConfiguration configurationUIBuilder, SystemConfiguration systemConfiguration,
 									  TCPConfiguration tcpConfiguration, GripperAPIProvider gripperAPIProvider) {
 		// Intentionally left empty
 	}

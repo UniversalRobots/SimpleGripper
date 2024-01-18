@@ -24,76 +24,70 @@
 		<urcap.copyright>Copyright (C) 2009-${copyright.year} Universal Robots. All Rights Reserved</urcap.copyright>
 		<urcap.description>Simple Gripper URCap</urcap.description>
 		<urcap.licenseType>Sample license</urcap.licenseType>
+		<urcap.compatibility.CB3>true</urcap.compatibility.CB3>
+		<urcap.compatibility.eSeries>true</urcap.compatibility.eSeries>
 		<!--********************** END OF URCAP META DATA **********************-->
 		<!--********************************************************************-->
+
+		<!-- Register the BundleActivator -->
+		<urcap.bundleActivator>com.ur.urcap.examples.driver.gripper.simplegripper.Activator</urcap.bundleActivator>
 
 		<!-- Host, username and password of the robot to be used when running "mvn install -Premote" -->
 		<urcap.install.host>localhost</urcap.install.host>
 		<urcap.install.username>root</urcap.install.username>
 		<urcap.install.password>easybot</urcap.install.password>
 
-		<!--Install path for the UR Sim-->
+		<!-- Install path for the UR Sim -->
 		<ursim.home></ursim.home>
 
-		<!--Host and standard user/password for UR Sim running in a VM-->
+		<!-- Host and standard user/password for UR Sim running in a VM -->
 		<ursimvm.install.host></ursimvm.install.host>
 		<ursimvm.install.username>ur</ursimvm.install.username>
 		<ursimvm.install.password>easybot</ursimvm.install.password>
 
-		<!--Current year for the copyright-->
+		<!-- Current year for the copyright -->
 		<copyright.year>${maven.build.timestamp}</copyright.year>
 		<maven.build.timestamp.format>yyyy</maven.build.timestamp.format>
 	</properties>
+
+	<dependencies>
+		<!-- Required dependencies, these are provided by PolyScope -->
+		<dependency>
+			<groupId>org.osgi</groupId>
+			<artifactId>org.osgi.core</artifactId>
+			<version>4.3.0</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.ur.urcap</groupId>
+			<artifactId>api</artifactId>
+			<version>1.8.0</version>
+			<scope>provided</scope>
+		</dependency>
+	</dependencies>
 
 	<build>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.6.0</version>
 				<configuration>
 					<source>1.6</source>
 					<target>1.6</target>
 				</configuration>
 			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-install-plugin</artifactId>
-				<version>2.5.2</version>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<version>2.22.1</version>
-				<configuration>
-					<runOrder>alphabetical</runOrder>
-					<useSystemClassLoader>false</useSystemClassLoader>
-				</configuration>
-			</plugin>
-			<plugin>
-				<artifactId>maven-jar-plugin</artifactId>
-				<version>3.0.2</version>
-				<configuration>
-					<archive>
-						<manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
-					</archive>
-				</configuration>
-			</plugin>
-			<plugin>
-				<artifactId>maven-resources-plugin</artifactId>
-				<version>3.0.2</version>
-			</plugin>
+			<!-- Plugin for packaging the compiled URCap into an OSGi bundle -->
 			<plugin>
 				<groupId>org.apache.felix</groupId>
 				<artifactId>maven-bundle-plugin</artifactId>
-				<version>2.4.0</version>
+				<version>5.1.9</version>
 				<extensions>true</extensions>
 				<executions>
 					<execution>
-						<id>bundle-manifest</id>
-						<phase>process-classes</phase>
+						<id>bundle-urcap</id>
+						<phase>package</phase>
 						<goals>
-							<goal>manifest</goal>
+							<goal>bundle</goal>
 						</goals>
 					</execution>
 				</executions>
@@ -101,12 +95,14 @@
 					<instructions>
 						<!--********** DO NOT MODIFY THE ENTRIES OF THIS SECTION **********-->
 						<Bundle-Category>URCap</Bundle-Category>
-						<Bundle-Activator>com.ur.urcap.examples.driver.gripper.simplegripper.Activator</Bundle-Activator>
+						<Bundle-Activator>${urcap.bundleActivator}</Bundle-Activator>
 						<Bundle-Vendor>${urcap.vendor}</Bundle-Vendor>
 						<Bundle-ContactAddress>${urcap.contactAddress}</Bundle-ContactAddress>
 						<Bundle-Copyright>${urcap.copyright}</Bundle-Copyright>
 						<Bundle-LicenseType>${urcap.licenseType}</Bundle-LicenseType>
 						<Bundle-Description>${urcap.description}</Bundle-Description>
+						<URCapCompatibility-CB3>${urcap.compatibility.CB3}</URCapCompatibility-CB3>
+						<URCapCompatibility-eSeries>${urcap.compatibility.eSeries}</URCapCompatibility-eSeries>
 						<!--***************************************************************-->
 						<Import-Package>
 							com.ur.urcap.api*,
@@ -115,10 +111,12 @@
 					</instructions>
 				</configuration>
 			</plugin>
+
+			<!-- Plugin for executing system commands. Used to transform the packaged .jar file into a .urcap file -->
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>exec-maven-plugin</artifactId>
-				<version>1.1</version>
+				<version>3.1.0</version>
 				<executions>
 					<!-- generate URCap package after compiling -->
 					<execution>
@@ -135,8 +133,11 @@
 					</execution>
 				</executions>
 			</plugin>
+
+			<!-- Plugin for packaging the source code into a distributable tar.gz archive, configured using the assembly.xml file -->
 			<plugin>
 				<artifactId>maven-assembly-plugin</artifactId>
+				<version>3.6.0</version>
 				<configuration>
 					<descriptors>
 						<descriptor>assembly.xml</descriptor>
@@ -154,142 +155,111 @@
 		</plugins>
 	</build>
 
-	<dependencies>
-		<dependency>
-			<groupId>org.osgi</groupId>
-			<artifactId>org.osgi.core</artifactId>
-			<version>4.3.0</version>
-		</dependency>
-
-		<dependency>
-			<groupId>com.ur.urcap</groupId>
-			<artifactId>api</artifactId>
-			<version>1.8.0</version>
-			<scope>provided</scope>
-		</dependency>
-
-		<!-- test dependencies -->
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.12</version>
-			<scope>test</scope>
-		</dependency>
-	</dependencies>
-
 	<profiles>
-		<profile>
-			<id>remote</id>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.codehaus.mojo</groupId>
-						<artifactId>exec-maven-plugin</artifactId>
-						<version>1.1</version>
-						<executions>
-							<execution>
-								<id>remote-install-urcap</id>
-								<phase>install</phase>
-								<goals>
-									<goal>exec</goal>
-								</goals>
-								<configuration>
-									<executable>sshpass</executable>
-									<commandlineArgs>-p ${urcap.install.password} scp -o StrictHostKeyChecking=no target/${project.build.finalName}.jar ${urcap.install.username}@${urcap.install.host}:/root/.urcaps/${urcap.symbolicname}.jar</commandlineArgs>
-									<workingDirectory>.</workingDirectory>
-								</configuration>
-							</execution>
-							<execution>
-								<id>remote-restart-ui</id>
-								<phase>install</phase>
-								<goals>
-									<goal>exec</goal>
-								</goals>
-								<configuration>
-									<executable>sshpass</executable>
-									<commandlineArgs>-p ${urcap.install.password} ssh ${urcap.install.username}@${urcap.install.host} pkill java</commandlineArgs>
-									<workingDirectory>.</workingDirectory>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
+		<!-- Maven profile for deploying URCap locally -->
 		<profile>
 			<id>local</id>
 			<build>
 				<plugins>
 					<plugin>
-						<groupId>org.codehaus.mojo</groupId>
-						<artifactId>exec-maven-plugin</artifactId>
-						<version>1.1</version>
+						<groupId>com.ur.urcap</groupId>
+						<artifactId>urcap-deploy-maven-plugin</artifactId>
+						<version>1.0.0</version>
 						<executions>
 							<execution>
-								<id>local-install-urcap</id>
-								<phase>install</phase>
+								<phase>
+									install
+								</phase>
 								<goals>
-									<goal>exec</goal>
+									<goal>local</goal>
 								</goals>
-								<configuration>
-									<executable>cp</executable>
-									<commandlineArgs>target/${project.build.finalName}.jar ${user.home}/.urcaps/${urcap.symbolicname}.jar</commandlineArgs>
-									<workingDirectory>.</workingDirectory>
-								</configuration>
 							</execution>
 						</executions>
+						<dependencies>
+							<dependency>
+								<groupId>org.codehaus.groovy</groupId>
+								<artifactId>groovy-all</artifactId>
+								<version>3.0.9</version>
+								<type>pom</type>
+							</dependency>
+							<dependency>
+								<groupId>org.codehaus.groovy.modules.http-builder</groupId>
+								<artifactId>http-builder</artifactId>
+								<version>0.7.1</version>
+							</dependency>
+						</dependencies>
 					</plugin>
 				</plugins>
 			</build>
 		</profile>
+		<!-- Maven profile for deploying URCap to a robot -->
 		<profile>
-			<id>ursim</id>
+			<id>remote</id>
 			<build>
 				<plugins>
 					<plugin>
-						<groupId>org.codehaus.mojo</groupId>
-						<artifactId>exec-maven-plugin</artifactId>
-						<version>1.1</version>
+						<groupId>com.ur.urcap</groupId>
+						<artifactId>urcap-deploy-maven-plugin</artifactId>
+						<version>1.0.0</version>
 						<executions>
 							<execution>
-								<id>ursim-install-urcap</id>
-								<phase>install</phase>
+								<phase>
+									install
+								</phase>
 								<goals>
-									<goal>exec</goal>
+									<goal>remote</goal>
 								</goals>
-								<configuration>
-									<executable>cp</executable>
-									<commandlineArgs>target/${project.build.finalName}.jar ${ursim.home}/.urcaps/${urcap.symbolicname}.jar</commandlineArgs>
-									<workingDirectory>.</workingDirectory>
-								</configuration>
 							</execution>
 						</executions>
+						<dependencies>
+							<dependency>
+								<groupId>org.codehaus.groovy</groupId>
+								<artifactId>groovy-all</artifactId>
+								<version>3.0.9</version>
+								<type>pom</type>
+							</dependency>
+							<dependency>
+								<groupId>org.codehaus.groovy.modules.http-builder</groupId>
+								<artifactId>http-builder</artifactId>
+								<version>0.7.1</version>
+							</dependency>
+						</dependencies>
 					</plugin>
 				</plugins>
 			</build>
 		</profile>
+		<!-- Maven profile for deploying URCap to URSim -->
 		<profile>
 			<id>ursimvm</id>
 			<build>
 				<plugins>
 					<plugin>
-						<groupId>org.codehaus.mojo</groupId>
-						<artifactId>exec-maven-plugin</artifactId>
-						<version>1.1</version>
+						<groupId>com.ur.urcap</groupId>
+						<artifactId>urcap-deploy-maven-plugin</artifactId>
+						<version>1.0.0</version>
 						<executions>
 							<execution>
-								<id>ursimvm-install-urcap</id>
-								<phase>install</phase>
+								<phase>
+									install
+								</phase>
 								<goals>
-									<goal>exec</goal>
+									<goal>ursimvm</goal>
 								</goals>
-								<configuration>
-									<executable>sshpass</executable>
-									<commandlineArgs>-p ${ursimvm.install.password} scp -o StrictHostKeyChecking=no target/${project.build.finalName}.jar ${ursimvm.install.username}@${ursimvm.install.host}:/home/ur/ursim-current/.urcaps/${urcap.symbolicname}.jar</commandlineArgs>
-									<workingDirectory>.</workingDirectory>
-								</configuration>
 							</execution>
 						</executions>
+						<dependencies>
+							<dependency>
+								<groupId>org.codehaus.groovy</groupId>
+								<artifactId>groovy-all</artifactId>
+								<version>3.0.9</version>
+								<type>pom</type>
+							</dependency>
+							<dependency>
+								<groupId>org.codehaus.groovy.modules.http-builder</groupId>
+								<artifactId>http-builder</artifactId>
+								<version>0.7.1</version>
+							</dependency>
+						</dependencies>
 					</plugin>
 				</plugins>
 			</build>
